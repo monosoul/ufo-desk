@@ -12,8 +12,15 @@ binary_sensor:
       - delayed_on: 10ms
       - delayed_off: 10ms
     on_press:
-      lambda: |-
-        id(the_desk).desk().push_button(${btn});
+      # Wake the screen instantly on a physical button, then act.
+      - lambda: |-
+          id(last_activity_ms) = millis();
+          if (!id(display_is_on)) {
+            id(display_is_on) = true;
+            id(desk_display).turn_on();
+          }
+      - lambda: |-
+          id(the_desk).desk().push_button(${btn});
     on_release:
       lambda: |-
         id(the_desk).desk().release_button();
