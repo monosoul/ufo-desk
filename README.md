@@ -29,6 +29,9 @@ The component assumes that you use it with a popular ESP8266 NodeMCU module with
 
 Case is 3D printed, buttons are also a popular model than can be bought easily.
 
+### RJ-45 wiring is as follows
+![Wiring](pic/RJ-45_wiring.webp)
+
 Case
 ======
 [STL file](cad/ufo_desk_case.stl)
