@@ -12,10 +12,8 @@ binary_sensor:
       - delayed_on: 10ms
       - delayed_off: 10ms
     on_press:
-      - script.execute: wake_display
-      - lambda: |-
-          id(the_desk).desk().push_button(${btn});
+      lambda: |-
+        id(the_desk).desk().push_button(${btn});
     on_release:
       lambda: |-
         id(the_desk).desk().release_button();
- 

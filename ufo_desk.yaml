@@ -1,16 +1,14 @@
 esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
-  on_boot:
-    - script.execute: wake_display
- 
+
 esp8266:
   board: nodemcuv2
- 
+
 # Enable logging
 logger:
   hardware_uart: UART1
- 
+
 #
 # Wireless stuff and Home Assistant API
 # Uncomment to enable.
@@ -34,15 +32,14 @@ wifi:
     password: !secret ap_password
  
 ###########################
- 
+
 external_components:
   - source: components
     components: [ ufo_desk ]
- 
+
 ufo_desk:
   id: the_desk
   on_desk_event:
-    - script.execute: wake_display
     - lambda: |-
         const std::array all_switches = {
           id(switch_up),
@@ -70,34 +67,7 @@ ufo_desk:
           }
         }
         id(desk_display).update();
- 
-#
-# Display auto-dim: turn the screen off after an (HA-configurable) idle
-# timeout, wake it on any button press or desk activity.
-#
- 
-number:
-  - platform: template
-    name: Display dim timeout
-    id: dim_timeout
-    unit_of_measurement: s
-    min_value: 1
-    max_value: 300
-    step: 1
-    initial_value: 10
-    restore_value: true
-    optimistic: true
- 
-script:
-  - id: wake_display
-    mode: restart
-    then:
-      - lambda: |-
-          id(desk_display).turn_on();
-          id(desk_display).update();
-      - delay: !lambda "return (uint32_t) (id(dim_timeout).state * 1000);"
-      - lambda: "id(desk_display).turn_off();"
- 
+
 sensor:
   - platform: template
     id: sensor_desk_height
@@ -105,7 +75,7 @@ sensor:
     accuracy_decimals: 0
     unit_of_measurement: mm
     icon: mdi:ruler
- 
+
 text_sensor:
   - platform: template
     id: tsensor_error
@@ -114,7 +84,7 @@ text_sensor:
   - platform: template
     id: tsensor_status
     name: Status
- 
+
 switch:
   - platform: template
     id: switch_up
@@ -136,7 +106,7 @@ switch:
     turn_off_action:
       lambda: |-
         id(the_desk).desk().release_button();
- 
+
 packages:
   gpio_btn_mem: !include
     file: gpio_btn.yaml
@@ -168,29 +138,29 @@ packages:
       name: "GPIO btn preset2"
       pin: "D7"
       btn: "ufo_desk::Button::preset2"
- 
+
 # D1 D2 D3 D4(led) D7
- 
+
 uart:
   tx_pin: GPIO1
   rx_pin: GPIO3
   baud_rate: 57600
- 
- 
+
+
 #
 # Display stuff
 #
- 
+
 i2c:
   sda: D5
   scl: D6
   frequency: 400kHz
- 
+
 font:
   - file: "gfonts://Roboto"
     id: desk_font
     size: 14
- 
+
 display:
   - platform: ssd1306_i2c
     id: desk_display
@@ -201,4 +171,3 @@ display:
       it.printf(64, 0, id(desk_font), "MH:%d", d.stored_height_mm());
       it.printf(0, 16, id(desk_font), "%s", d.position_status_str().c_str());
       it.printf(0, 32, id(desk_font), "E:%02d", d.error_code());
-
