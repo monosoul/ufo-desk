@@ -40,6 +40,14 @@ external_components:
 ufo_desk:
   id: the_desk
   on_desk_event:
+    # Any desk activity keeps the screen awake (cheap: just a timestamp,
+    # plus an instant wake if it was off). No I2C work per event.
+    - lambda: |-
+        id(last_activity_ms) = millis();
+        if (!id(display_is_on)) {
+          id(display_is_on) = true;
+          id(desk_display).turn_on();
+        }
     - lambda: |-
         const std::array all_switches = {
           id(switch_up),
@@ -68,6 +76,54 @@ ufo_desk:
         }
         id(desk_display).update();
 
+#
+# Display auto-dim: turn the screen off after an (HA-configurable) idle
+# timeout, wake it on any button press or desk activity.
+#
+# Design note: the activity handlers above only write a timestamp; this
+# single 1s interval decides on/off and only issues an I2C command on the
+# actual state transition. That keeps it non-blocking and immune to the
+# high-frequency on_desk_event storm.
+#
+
+globals:
+  - id: last_activity_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: display_is_on
+    type: bool
+    restore_value: no
+    initial_value: 'true'
+
+number:
+  - platform: template
+    name: Display dim timeout
+    id: dim_timeout
+    unit_of_measurement: s
+    min_value: 1
+    max_value: 300
+    step: 1
+    initial_value: 10
+    restore_value: true
+    optimistic: true
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          float ts = id(dim_timeout).state;
+          uint32_t timeout_ms = (ts > 0.0f) ? (uint32_t) (ts * 1000.0f) : 10000;
+          bool should_be_on = (millis() - id(last_activity_ms)) < timeout_ms;
+          if (should_be_on != id(display_is_on)) {
+            id(display_is_on) = should_be_on;
+            if (should_be_on) {
+              id(desk_display).turn_on();
+            } else {
+              id(desk_display).turn_off();
+            }
+          }
+
 sensor:
   - platform: template
     id: sensor_desk_height
@@ -88,7 +144,7 @@ text_sensor:
 switch:
   - platform: template
     id: switch_up
-    name: "\u21A5 Up"
+    name: "↥ Up"
     optimistic: true
     turn_on_action:
       lambda: |-
@@ -98,7 +154,7 @@ switch:
         id(the_desk).desk().release_button();
   - platform: template
     id: switch_down
-    name: "\u21A7 Down"
+    name: "↧ Down"
     optimistic: true
     turn_on_action:
       lambda: |-
