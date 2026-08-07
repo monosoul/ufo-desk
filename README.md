@@ -33,6 +33,14 @@ The board: https://amzn.eu/d/02hhJ2TA
 
 The buttons: https://amzn.eu/d/06ONH4V7
 
+### Control box hardware mods
+In my case the Control Box was making high-pitched whine with the board attached (see example here: https://youtube.com/shorts/FGPJeh3KBNg ).
+
+To alleviate that I applied a silicon sealant (this one: https://amzn.eu/d/05OSW01C ) to the capacitor at E2 (the noisiest one), then C14 and MOV2 (those were the next noisiest ones), and then applied it to other coiled elements, just in case.
+![CB1-01-sealant-1](pic/CB1-01_sealant_1.webp)
+
+![CB1-01-sealant-2](pic/CB1-01_sealant_2.webp)
+
 ### RJ-45 wiring is as follows
 ![Wiring](pic/RJ-45_wiring.webp)
 
