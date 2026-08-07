@@ -27,7 +27,11 @@ The component assumes that you use it with a popular ESP8266 NodeMCU module with
 
 ![NodeMCU](pic/esp8266_display.jpeg)
 
-Case is 3D printed, buttons are also a popular model than can be bought easily.
+Case is 3D printed.
+
+The board: https://amzn.eu/d/02hhJ2TA
+
+The buttons: https://amzn.eu/d/06ONH4V7
 
 ### RJ-45 wiring is as follows
 ![Wiring](pic/RJ-45_wiring.webp)
