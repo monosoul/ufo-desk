@@ -30,6 +30,8 @@ wifi:
   ap:
     ssid: "${friendly_name} Fallback"
     password: !secret ap_password
+
+captive_portal:
  
 ###########################
 
