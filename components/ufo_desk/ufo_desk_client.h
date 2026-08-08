@@ -34,6 +34,7 @@ enum class PositionStatus : int {
   movingSlow,
   movingFast,
   reset,
+  resetting,
 };
 
 class UfoDeskClient;
