@@ -96,8 +96,8 @@ void UfoDesk::arm_or_cancel_calibration_() {
   }
   bool both = pressed_[static_cast<int>(Button::up)] && pressed_[static_cast<int>(Button::down)];
   if (both) {
-    // Arm only after UP+DOWN are held together for 10s (matches the stock remote).
-    this->set_timeout("calibrate_arm", 10000, [this]() {
+    // Arm only after UP+DOWN are held together for 7s.
+    this->set_timeout("calibrate_arm", 7000, [this]() {
       if (pressed_[static_cast<int>(Button::up)] && pressed_[static_cast<int>(Button::down)]) {
         // Latch: stream 0x88 until the box finishes (status 0x04) regardless of
         // the buttons, with a safety timeout so it can never run forever.
