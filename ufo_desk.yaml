@@ -50,31 +50,16 @@ ufo_desk:
           id(display_is_on) = true;
           id(desk_display).turn_on();
         }
+    # Publish desk telemetry to HA and refresh the OLED. This handler must NOT
+    # drive the switches: their actions write the desk command buffer, which
+    # would clobber whatever recompute_() is streaming (e.g. a running reset).
     - lambda: |-
-        const std::array all_switches = {
-          id(switch_up),
-          id(switch_down),
-        };
         if (x.type == ufo_desk::UfoDeskEventType::curHeightChanged) {
           id(sensor_desk_height).publish_state(x.desk.cur_height_mm());
         } else if (x.type == ufo_desk::UfoDeskEventType::errorChanged) {
           id(tsensor_error).publish_state(str_sprintf("E%02d", x.desk.error_code()));
         } else if (x.type == ufo_desk::UfoDeskEventType::positionStatusChanged) {
           id(tsensor_status).publish_state(x.desk.position_status_str());
-          if (x.desk.position_status() != ufo_desk::PositionStatus::movingSlow &&
-              x.desk.position_status() != ufo_desk::PositionStatus::movingFast) {
-            id(switch_up).turn_off();
-            id(switch_down).turn_off();
-          }
-        } else if (x.type == ufo_desk::UfoDeskEventType::btnStateChanged) {
-          auto b = x.desk.pushed_button();
-          if (b == ufo_desk::Button::up) {
-            ufo_desk::exclusive_turn_on(id(switch_up), all_switches);
-          } else if (b == ufo_desk::Button::down) {
-            ufo_desk::exclusive_turn_on(id(switch_down), all_switches);
-          } else if (b == ufo_desk::Button::none) {
-            ufo_desk::exclusive_turn_on((template_::TemplateSwitch*)nullptr, all_switches);
-          }
         }
         id(desk_display).update();
 
