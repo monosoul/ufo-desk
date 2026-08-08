@@ -107,6 +107,9 @@ bool UfoDeskClient::parse_response(const std::array<uint8_t, kResponseSize> &res
     case 0x04:
       position_status = PositionStatus::reset;
       break;
+    case 0x03:
+      position_status = PositionStatus::resetting;
+      break;
   }
   if (position_status == PositionStatus::unknown) {
     ESP_LOGW(TAG, "Unknown position status: %02x", resp_buf[11]);
@@ -157,7 +160,7 @@ uint16_t UfoDeskClient::crc16_modbus(const uint8_t *buf, unsigned int len) {
 
 const std::string &UfoDeskClient::pos_status_to_str(PositionStatus s) {
   static const std::string vars[] = {"Unknown",     "Maxed out",   "Bottomed out", "Between min max",
-                                     "Moving slow", "Moving fast", "Reset"};
+                                     "Moving slow", "Moving fast", "Reset",        "Resetting"};
   return vars[static_cast<int>(s)];
 }
 
