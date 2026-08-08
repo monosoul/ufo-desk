@@ -23,6 +23,7 @@ enum class Button : int {
   down,
   preset1,
   preset2,
+  calibrate,
 };
 
 enum class PositionStatus : int {
