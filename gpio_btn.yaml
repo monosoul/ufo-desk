@@ -1,6 +1,7 @@
 binary_sensor:
   - platform: gpio
     name: ${name}
+    id: ${sensor_id}
     internal: true
     pin:
       number: ${pin}
@@ -12,15 +13,21 @@ binary_sensor:
       - delayed_on: 10ms
       - delayed_off: 10ms
     on_press:
-      # Wake the screen instantly on a physical button, then act.
+      # Wake the screen instantly on any physical button.
       - lambda: |-
           id(last_activity_ms) = millis();
           if (!id(display_is_on)) {
             id(display_is_on) = true;
             id(desk_display).turn_on();
           }
-      - lambda: |-
-          id(the_desk).desk().push_button(${btn});
+      # Arm calibration only while UP and DOWN are both held.
+      - if:
+          condition:
+            lambda: 'return id(btn_up).state && id(btn_down).state;'
+          then:
+            - script.execute: calibrate_arm
+      - script.execute: apply_buttons
     on_release:
-      lambda: |-
-        id(the_desk).desk().release_button();
+      - script.stop: calibrate_arm
+      - lambda: 'id(calibrating) = false;'
+      - script.execute: apply_buttons
