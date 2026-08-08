@@ -150,6 +150,24 @@ switch:
       lambda: |-
         id(the_desk).desk().release_button();
 
+button:
+  - platform: template
+    name: "Preset 1"
+    id: button_preset1
+    icon: mdi:bookmark
+    on_press:
+      - lambda: "id(the_desk).desk().push_button(ufo_desk::Button::preset1);"
+      - delay: 300ms
+      - lambda: "id(the_desk).desk().release_button();"
+  - platform: template
+    name: "Preset 2"
+    id: button_preset2
+    icon: mdi:bookmark-outline
+    on_press:
+      - lambda: "id(the_desk).desk().push_button(ufo_desk::Button::preset2);"
+      - delay: 300ms
+      - lambda: "id(the_desk).desk().release_button();"
+
 packages:
   gpio_btn_mem: !include
     file: gpio_btn.yaml
