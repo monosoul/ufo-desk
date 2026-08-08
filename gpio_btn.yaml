@@ -1,7 +1,6 @@
 binary_sensor:
   - platform: gpio
     name: ${name}
-    id: ${sensor_id}
     internal: true
     pin:
       number: ${pin}
@@ -20,14 +19,8 @@ binary_sensor:
             id(display_is_on) = true;
             id(desk_display).turn_on();
           }
-      # Arm calibration only while UP and DOWN are both held.
-      - if:
-          condition:
-            lambda: 'return id(btn_up).state && id(btn_down).state;'
-          then:
-            - script.execute: calibrate_arm
-      - script.execute: apply_buttons
+      - lambda: |-
+          id(the_desk).press(${btn});
     on_release:
-      - script.stop: calibrate_arm
-      - lambda: 'id(calibrating) = false;'
-      - script.execute: apply_buttons
+      - lambda: |-
+          id(the_desk).release(${btn});
