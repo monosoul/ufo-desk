@@ -45,7 +45,7 @@ class UfoDesk : public uart::UARTDevice, public PollingComponent {
   void recompute_();
   void arm_or_cancel_calibration_();
 
-  bool held_[7] = {};
+  bool pressed_[7] = {};
   bool calibrating_ = false;
 };
 
