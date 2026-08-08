@@ -17,15 +17,19 @@ void UfoDesk::setup() {
   });
 
   desk_client_.set_event_handler([this](UfoDeskEvent e) {
-    // The reset enters status "reset" (0x04) once it has bottomed out and
-    // started bouncing back up to the zero reference. A logic-analyzer capture
-    // of the stock remote shows it keeps streaming 0x88 for ~2s past that first
-    // 0x04 and then releases, after which the box finishes climbing on its own.
-    // Mirror that: hold 0x88 a bit longer, then release. Releasing at the very
-    // first 0x04 (still at the bottom) is too early and can strand the desk.
-    if (this->reset_active_ && e.type == UfoDeskEventType::positionStatusChanged &&
-        e.desk.position_status() == PositionStatus::reset) {
-      this->set_timeout("reset_finish", 2000, [this]() { this->finish_reset_(); });
+    // The reset enters status "reset" (0x04) once it has bottomed out and is
+    // bouncing back up to the zero reference (~720mm); the box then finishes the
+    // climb on its own once 0x88 stops. Release when the desk is essentially
+    // home, or after a 2s ceiling, whichever comes first -- so we neither cut it
+    // off at the bottom (strands the desk) nor keep 0x88 asserted once it's back
+    // at the top (which could re-trigger a fresh descent).
+    if (this->reset_active_ && e.desk.position_status() == PositionStatus::reset) {
+      if (e.type == UfoDeskEventType::positionStatusChanged) {
+        this->set_timeout("reset_finish", 2000, [this]() { this->finish_reset_(); });
+      }
+      if (e.desk.cur_height_mm() >= 719) {
+        this->finish_reset_();
+      }
     }
     this->event_callbacks_.call(e);
   });
