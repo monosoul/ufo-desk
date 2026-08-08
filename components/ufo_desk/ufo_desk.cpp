@@ -16,7 +16,15 @@ void UfoDesk::setup() {
     this->request_sent_at_ = millis();
   });
 
-  desk_client_.set_event_handler([this](UfoDeskEvent e) { this->event_callbacks_.call(e); });
+  desk_client_.set_event_handler([this](UfoDeskEvent e) {
+    // A reset finishes when the box reports the "reset" status (0x04) after
+    // driving to the bottom and bouncing back up. Stop streaming 0x88 then.
+    if (this->reset_active_ && e.type == UfoDeskEventType::positionStatusChanged &&
+        e.desk.position_status() == PositionStatus::reset) {
+      this->finish_reset_();
+    }
+    this->event_callbacks_.call(e);
+  });
 }
 
 void UfoDesk::loop() {
@@ -73,39 +81,57 @@ void UfoDesk::release(Button b) {
 }
 
 void UfoDesk::arm_or_cancel_calibration_() {
+  // Once a reset is latched it runs to completion on its own; button changes
+  // no longer matter until the box reports done.
+  if (reset_active_) {
+    return;
+  }
   bool both = pressed_[static_cast<int>(Button::up)] && pressed_[static_cast<int>(Button::down)];
   if (both) {
     // Arm only after UP+DOWN are held together for 10s (matches the stock remote).
     this->set_timeout("calibrate_arm", 10000, [this]() {
       if (pressed_[static_cast<int>(Button::up)] && pressed_[static_cast<int>(Button::down)]) {
-        calibrating_ = true;
+        // Latch: stream 0x88 until the box finishes (status 0x04) regardless of
+        // the buttons, with a safety timeout so it can never run forever.
+        reset_active_ = true;
+        this->set_timeout("reset_timeout", 30000, [this]() { this->finish_reset_(); });
         this->recompute_();
       }
     });
   } else {
     this->cancel_timeout("calibrate_arm");
-    calibrating_ = false;
   }
 }
 
+void UfoDesk::finish_reset_() {
+  reset_active_ = false;
+  this->cancel_timeout("reset_timeout");
+  this->recompute_();
+}
+
 void UfoDesk::recompute_() {
-  bool u = pressed_[static_cast<int>(Button::up)];
-  bool d = pressed_[static_cast<int>(Button::down)];
   Button cmd;
-  if (u && d) {
-    cmd = calibrating_ ? Button::calibrate : Button::none;
-  } else if (u) {
-    cmd = Button::up;
-  } else if (d) {
-    cmd = Button::down;
-  } else if (pressed_[static_cast<int>(Button::mem)]) {
-    cmd = Button::mem;
-  } else if (pressed_[static_cast<int>(Button::preset1)]) {
-    cmd = Button::preset1;
-  } else if (pressed_[static_cast<int>(Button::preset2)]) {
-    cmd = Button::preset2;
+  if (reset_active_) {
+    // Latched reset: drive it to completion.
+    cmd = Button::calibrate;
   } else {
-    cmd = Button::none;
+    bool u = pressed_[static_cast<int>(Button::up)];
+    bool d = pressed_[static_cast<int>(Button::down)];
+    if (u && d) {
+      cmd = Button::none;  // both held (arming window): stay still
+    } else if (u) {
+      cmd = Button::up;
+    } else if (d) {
+      cmd = Button::down;
+    } else if (pressed_[static_cast<int>(Button::mem)]) {
+      cmd = Button::mem;
+    } else if (pressed_[static_cast<int>(Button::preset1)]) {
+      cmd = Button::preset1;
+    } else if (pressed_[static_cast<int>(Button::preset2)]) {
+      cmd = Button::preset2;
+    } else {
+      cmd = Button::none;
+    }
   }
   desk_client_.push_button(cmd);
 }
