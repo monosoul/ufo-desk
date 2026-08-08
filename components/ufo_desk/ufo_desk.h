@@ -44,9 +44,10 @@ class UfoDesk : public uart::UARTDevice, public PollingComponent {
 
   void recompute_();
   void arm_or_cancel_calibration_();
+  void finish_reset_();
 
   bool pressed_[7] = {};
-  bool calibrating_ = false;
+  bool reset_active_ = false;
 };
 
 template<typename S, size_t N> void exclusive_turn_on(S *on, const std::array<S *, N> &all) {
