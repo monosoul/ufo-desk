@@ -229,3 +229,6 @@ display:
       it.printf(64, 0, id(desk_font), "MH:%d", d.stored_height_mm());
       it.printf(0, 16, id(desk_font), "%s", d.position_status_str().c_str());
       it.printf(0, 32, id(desk_font), "E:%02d", d.error_code());
+      if (d.programming_mode()) {
+        it.printf(0, 48, id(desk_font), "SET");
+      }
