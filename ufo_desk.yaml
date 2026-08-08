@@ -97,10 +97,6 @@ globals:
     type: bool
     restore_value: no
     initial_value: 'true'
-  - id: calibrating
-    type: bool
-    restore_value: no
-    initial_value: 'false'
 
 number:
   - platform: template
@@ -154,58 +150,20 @@ switch:
     optimistic: true
     turn_on_action:
       lambda: |-
-        id(the_desk).desk().push_button(ufo_desk::Button::up);
+        id(the_desk).press(ufo_desk::Button::up);
     turn_off_action:
       lambda: |-
-        id(the_desk).desk().release_button();
+        id(the_desk).release(ufo_desk::Button::up);
   - platform: template
     id: switch_down
     name: "↧ Down"
     optimistic: true
     turn_on_action:
       lambda: |-
-        id(the_desk).desk().push_button(ufo_desk::Button::down);
+        id(the_desk).press(ufo_desk::Button::down);
     turn_off_action:
       lambda: |-
-        id(the_desk).desk().release_button();
-
-script:
-  # Central command selector: choose the single code to stream to the desk
-  # from all physical button states. UP+DOWN held = calibrate once armed,
-  # or stop while still arming; otherwise the highest-priority single button.
-  - id: apply_buttons
-    then:
-      - lambda: |-
-          auto &desk = id(the_desk).desk();
-          bool u = id(btn_up).state;
-          bool d = id(btn_down).state;
-          if (u && d && id(calibrating)) {
-            desk.push_button(ufo_desk::Button::calibrate);
-          } else if (u && d) {
-            desk.release_button();
-          } else if (u) {
-            desk.push_button(ufo_desk::Button::up);
-          } else if (d) {
-            desk.push_button(ufo_desk::Button::down);
-          } else if (id(btn_mem).state) {
-            desk.push_button(ufo_desk::Button::mem);
-          } else if (id(btn_preset1).state) {
-            desk.push_button(ufo_desk::Button::preset1);
-          } else if (id(btn_preset2).state) {
-            desk.push_button(ufo_desk::Button::preset2);
-          } else {
-            desk.release_button();
-          }
-  # Calibration arms only after UP and DOWN are held together for 10s.
-  - id: calibrate_arm
-    mode: restart
-    then:
-      - delay: 10s
-      - lambda: |-
-          if (id(btn_up).state && id(btn_down).state) {
-            id(calibrating) = true;
-          }
-      - script.execute: apply_buttons
+        id(the_desk).release(ufo_desk::Button::down);
 
 packages:
   gpio_btn_mem: !include
@@ -213,31 +171,31 @@ packages:
     vars:
       name: "GPIO btn mem"
       pin: "D1"
-      sensor_id: btn_mem
+      btn: "ufo_desk::Button::mem"
   gpio_btn_up: !include
     file: gpio_btn.yaml
     vars:
       name: "GPIO btn up"
       pin: "D2"
-      sensor_id: btn_up
+      btn: "ufo_desk::Button::up"
   gpio_btn_down: !include
     file: gpio_btn.yaml
     vars:
       name: "GPIO btn down"
       pin: "D3"
-      sensor_id: btn_down
+      btn: "ufo_desk::Button::down"
   gpio_btn_preset1: !include
     file: gpio_btn.yaml
     vars:
       name: "GPIO btn preset1"
       pin: "D4"
-      sensor_id: btn_preset1
+      btn: "ufo_desk::Button::preset1"
   gpio_btn_preset2: !include
     file: gpio_btn.yaml
     vars:
       name: "GPIO btn preset2"
       pin: "D7"
-      sensor_id: btn_preset2
+      btn: "ufo_desk::Button::preset2"
 
 # D1 D2 D3 D4(led) D7
 
