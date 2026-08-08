@@ -59,4 +59,54 @@ void UfoDesk::add_event_callback(std::function<void(UfoDeskEvent)> &&callback) {
   event_callbacks_.add(std::move(callback));
 }
 
+
+void UfoDesk::press(Button b) {
+  held_[static_cast<int>(b)] = true;
+  this->arm_or_cancel_calibration_();
+  this->recompute_();
+}
+
+void UfoDesk::release(Button b) {
+  held_[static_cast<int>(b)] = false;
+  this->arm_or_cancel_calibration_();
+  this->recompute_();
+}
+
+void UfoDesk::arm_or_cancel_calibration_() {
+  bool both = held_[static_cast<int>(Button::up)] && held_[static_cast<int>(Button::down)];
+  if (both) {
+    // Arm only after UP+DOWN are held together for 10s (matches the stock remote).
+    this->set_timeout("calibrate_arm", 10000, [this]() {
+      if (held_[static_cast<int>(Button::up)] && held_[static_cast<int>(Button::down)]) {
+        calibrating_ = true;
+        this->recompute_();
+      }
+    });
+  } else {
+    this->cancel_timeout("calibrate_arm");
+    calibrating_ = false;
+  }
+}
+
+void UfoDesk::recompute_() {
+  bool u = held_[static_cast<int>(Button::up)];
+  bool d = held_[static_cast<int>(Button::down)];
+  Button cmd;
+  if (u && d) {
+    cmd = calibrating_ ? Button::calibrate : Button::none;
+  } else if (u) {
+    cmd = Button::up;
+  } else if (d) {
+    cmd = Button::down;
+  } else if (held_[static_cast<int>(Button::mem)]) {
+    cmd = Button::mem;
+  } else if (held_[static_cast<int>(Button::preset1)]) {
+    cmd = Button::preset1;
+  } else if (held_[static_cast<int>(Button::preset2)]) {
+    cmd = Button::preset2;
+  } else {
+    cmd = Button::none;
+  }
+  desk_client_.push_button(cmd);
+}
 }  // namespace esphome::ufo_desk
