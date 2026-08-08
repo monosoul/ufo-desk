@@ -13,6 +13,7 @@ enum class UfoDeskEventType : int {
   errorChanged,
   positionStatusChanged,
   btnStateChanged,
+  programmingModeChanged,
 };
 
 enum class Button : int {
@@ -54,6 +55,7 @@ class UfoDeskClient {
   int cur_height_mm() const;
   int stored_height_mm() const;
   int error_code() const;
+  bool programming_mode() const;
   PositionStatus position_status() const;
   const std::string &position_status_str() const;
 
@@ -74,6 +76,7 @@ class UfoDeskClient {
   int cur_height_mm_ = 0;
   int stored_height_mm_ = 0;
   int error_code_ = -1;
+  bool programming_mode_ = false;
   PositionStatus position_status_ = PositionStatus::unknown;
   Button pushed_button_ = Button::none;
 

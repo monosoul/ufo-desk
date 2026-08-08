@@ -44,6 +44,7 @@ int UfoDeskClient::cur_height_mm() const { return cur_height_mm_; }
 int UfoDeskClient::stored_height_mm() const { return stored_height_mm_; }
 
 int UfoDeskClient::error_code() const { return error_code_; }
+bool UfoDeskClient::programming_mode() const { return programming_mode_; }
 
 PositionStatus UfoDeskClient::position_status() const { return position_status_; }
 
@@ -117,6 +118,13 @@ bool UfoDeskClient::parse_response(const std::array<uint8_t, kResponseSize> &res
   if (err != error_code_) {
     error_code_ = err;
     publish_event(UfoDeskEventType::errorChanged);
+  }
+
+  // Programming (memory-store armed) mode: bit0 of byte 2.
+  bool programming_mode = (resp_buf[2] & 0x01) != 0;
+  if (programming_mode != programming_mode_) {
+    programming_mode_ = programming_mode;
+    publish_event(UfoDeskEventType::programmingModeChanged);
   }
 
   return true;
