@@ -150,20 +150,20 @@ switch:
     optimistic: true
     turn_on_action:
       lambda: |-
-        id(the_desk).press(ufo_desk::Button::up);
+        id(the_desk).desk().push_button(ufo_desk::Button::up);
     turn_off_action:
       lambda: |-
-        id(the_desk).release(ufo_desk::Button::up);
+        id(the_desk).desk().release_button();
   - platform: template
     id: switch_down
     name: "↧ Down"
     optimistic: true
     turn_on_action:
       lambda: |-
-        id(the_desk).press(ufo_desk::Button::down);
+        id(the_desk).desk().push_button(ufo_desk::Button::down);
     turn_off_action:
       lambda: |-
-        id(the_desk).release(ufo_desk::Button::down);
+        id(the_desk).desk().release_button();
 
 packages:
   gpio_btn_mem: !include
