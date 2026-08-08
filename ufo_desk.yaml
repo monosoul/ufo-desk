@@ -169,72 +169,16 @@ switch:
       lambda: |-
         id(the_desk).desk().release_button();
 
-binary_sensor:
-  - platform: gpio
-    name: "GPIO btn up"
-    id: btn_up
-    internal: true
-    pin:
-      number: D2
-      mode:
-        input: true
-        pullup: true
-    filters:
-      - invert:
-      - delayed_on: 10ms
-      - delayed_off: 10ms
-    on_press:
-      - lambda: |-
-          id(last_activity_ms) = millis();
-          if (!id(display_is_on)) {
-            id(display_is_on) = true;
-            id(desk_display).turn_on();
-          }
-      - script.execute: updown_arm
-      - script.execute: updown_apply
-    on_release:
-      - script.stop: updown_arm
-      - lambda: |-
-          id(calibrating) = false;
-      - script.execute: updown_apply
-  - platform: gpio
-    name: "GPIO btn down"
-    id: btn_down
-    internal: true
-    pin:
-      number: D3
-      mode:
-        input: true
-        pullup: true
-    filters:
-      - invert:
-      - delayed_on: 10ms
-      - delayed_off: 10ms
-    on_press:
-      - lambda: |-
-          id(last_activity_ms) = millis();
-          if (!id(display_is_on)) {
-            id(display_is_on) = true;
-            id(desk_display).turn_on();
-          }
-      - script.execute: updown_arm
-      - script.execute: updown_apply
-    on_release:
-      - script.stop: updown_arm
-      - lambda: |-
-          id(calibrating) = false;
-      - script.execute: updown_apply
-
 script:
-  # Decide what to stream to the desk from the up/down button states.
-  # Both held < 10s -> stop (no movement); both held >= 10s (armed by
-  # updown_arm) -> calibrate (0x88); a single button -> that direction.
-  - id: updown_apply
+  # Central command selector: choose the single code to stream to the desk
+  # from all physical button states. UP+DOWN held = calibrate once armed,
+  # or stop while still arming; otherwise the highest-priority single button.
+  - id: apply_buttons
     then:
       - lambda: |-
+          auto &desk = id(the_desk).desk();
           bool u = id(btn_up).state;
           bool d = id(btn_down).state;
-          auto &desk = id(the_desk).desk();
           if (u && d && id(calibrating)) {
             desk.push_button(ufo_desk::Button::calibrate);
           } else if (u && d) {
@@ -243,11 +187,17 @@ script:
             desk.push_button(ufo_desk::Button::up);
           } else if (d) {
             desk.push_button(ufo_desk::Button::down);
+          } else if (id(btn_mem).state) {
+            desk.push_button(ufo_desk::Button::mem);
+          } else if (id(btn_preset1).state) {
+            desk.push_button(ufo_desk::Button::preset1);
+          } else if (id(btn_preset2).state) {
+            desk.push_button(ufo_desk::Button::preset2);
           } else {
             desk.release_button();
           }
-  # Arm calibration only after both have been held continuously for 10s.
-  - id: updown_arm
+  # Calibration arms only after UP and DOWN are held together for 10s.
+  - id: calibrate_arm
     mode: restart
     then:
       - delay: 10s
@@ -255,7 +205,7 @@ script:
           if (id(btn_up).state && id(btn_down).state) {
             id(calibrating) = true;
           }
-      - script.execute: updown_apply
+      - script.execute: apply_buttons
 
 packages:
   gpio_btn_mem: !include
@@ -263,19 +213,31 @@ packages:
     vars:
       name: "GPIO btn mem"
       pin: "D1"
-      btn: "ufo_desk::Button::mem"
+      sensor_id: btn_mem
+  gpio_btn_up: !include
+    file: gpio_btn.yaml
+    vars:
+      name: "GPIO btn up"
+      pin: "D2"
+      sensor_id: btn_up
+  gpio_btn_down: !include
+    file: gpio_btn.yaml
+    vars:
+      name: "GPIO btn down"
+      pin: "D3"
+      sensor_id: btn_down
   gpio_btn_preset1: !include
     file: gpio_btn.yaml
     vars:
       name: "GPIO btn preset1"
       pin: "D4"
-      btn: "ufo_desk::Button::preset1"
+      sensor_id: btn_preset1
   gpio_btn_preset2: !include
     file: gpio_btn.yaml
     vars:
       name: "GPIO btn preset2"
       pin: "D7"
-      btn: "ufo_desk::Button::preset2"
+      sensor_id: btn_preset2
 
 # D1 D2 D3 D4(led) D7
 
