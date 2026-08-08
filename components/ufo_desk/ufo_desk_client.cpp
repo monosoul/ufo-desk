@@ -26,6 +26,9 @@ void UfoDeskClient::push_button(Button b) {
     case Button::preset2:
       request_buf_[2] = 0x42;
       break;
+    case Button::calibrate:
+      request_buf_[2] = 0x88;
+      break;
   }
   request_buf_[5] = request_buf_[2];
   this->update_request_checksum();

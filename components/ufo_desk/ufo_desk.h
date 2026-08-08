@@ -23,6 +23,8 @@ class UfoDesk : public uart::UARTDevice, public PollingComponent {
   UfoDeskClient &desk() { return desk_client_; }
 
   void add_event_callback(std::function<void(UfoDeskEvent)> &&callback);
+  void press(Button b);
+  void release(Button b);
 
  protected:
  private:
@@ -39,6 +41,12 @@ class UfoDesk : public uart::UARTDevice, public PollingComponent {
   uint16_t dbg_last_crc_ = 0;
 
   CallbackManager<void(UfoDeskEvent)> event_callbacks_;
+
+  void recompute_();
+  void arm_or_cancel_calibration_();
+
+  bool pressed_[7] = {};
+  bool calibrating_ = false;
 };
 
 template<typename S, size_t N> void exclusive_turn_on(S *on, const std::array<S *, N> &all) {
