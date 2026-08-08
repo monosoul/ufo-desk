@@ -23,6 +23,7 @@ enum class Button : int {
   down,
   preset1,
   preset2,
+  calibrate,
 };
 
 enum class PositionStatus : int {
@@ -33,6 +34,7 @@ enum class PositionStatus : int {
   movingSlow,
   movingFast,
   reset,
+  resetting,
 };
 
 class UfoDeskClient;
