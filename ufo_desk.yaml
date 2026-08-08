@@ -97,6 +97,10 @@ globals:
     type: bool
     restore_value: no
     initial_value: 'true'
+  - id: calibrating
+    type: bool
+    restore_value: no
+    initial_value: 'false'
 
 number:
   - platform: template
@@ -165,6 +169,94 @@ switch:
       lambda: |-
         id(the_desk).desk().release_button();
 
+binary_sensor:
+  - platform: gpio
+    name: "GPIO btn up"
+    id: btn_up
+    internal: true
+    pin:
+      number: D2
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - invert:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      - lambda: |-
+          id(last_activity_ms) = millis();
+          if (!id(display_is_on)) {
+            id(display_is_on) = true;
+            id(desk_display).turn_on();
+          }
+      - script.execute: updown_arm
+      - script.execute: updown_apply
+    on_release:
+      - script.stop: updown_arm
+      - lambda: |-
+          id(calibrating) = false;
+      - script.execute: updown_apply
+  - platform: gpio
+    name: "GPIO btn down"
+    id: btn_down
+    internal: true
+    pin:
+      number: D3
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - invert:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      - lambda: |-
+          id(last_activity_ms) = millis();
+          if (!id(display_is_on)) {
+            id(display_is_on) = true;
+            id(desk_display).turn_on();
+          }
+      - script.execute: updown_arm
+      - script.execute: updown_apply
+    on_release:
+      - script.stop: updown_arm
+      - lambda: |-
+          id(calibrating) = false;
+      - script.execute: updown_apply
+
+script:
+  # Decide what to stream to the desk from the up/down button states.
+  # Both held < 10s -> stop (no movement); both held >= 10s (armed by
+  # updown_arm) -> calibrate (0x88); a single button -> that direction.
+  - id: updown_apply
+    then:
+      - lambda: |-
+          bool u = id(btn_up).state;
+          bool d = id(btn_down).state;
+          auto &desk = id(the_desk).desk();
+          if (u && d && id(calibrating)) {
+            desk.push_button(ufo_desk::Button::calibrate);
+          } else if (u && d) {
+            desk.release_button();
+          } else if (u) {
+            desk.push_button(ufo_desk::Button::up);
+          } else if (d) {
+            desk.push_button(ufo_desk::Button::down);
+          } else {
+            desk.release_button();
+          }
+  # Arm calibration only after both have been held continuously for 10s.
+  - id: updown_arm
+    mode: restart
+    then:
+      - delay: 10s
+      - lambda: |-
+          if (id(btn_up).state && id(btn_down).state) {
+            id(calibrating) = true;
+          }
+      - script.execute: updown_apply
+
 packages:
   gpio_btn_mem: !include
     file: gpio_btn.yaml
@@ -172,18 +264,6 @@ packages:
       name: "GPIO btn mem"
       pin: "D1"
       btn: "ufo_desk::Button::mem"
-  gpio_btn_up: !include
-    file: gpio_btn.yaml
-    vars:
-      name: "GPIO btn up"
-      pin: "D2"
-      btn: "ufo_desk::Button::up"
-  gpio_btn_down: !include
-    file: gpio_btn.yaml
-    vars:
-      name: "GPIO btn down"
-      pin: "D3"
-      btn: "ufo_desk::Button::down"
   gpio_btn_preset1: !include
     file: gpio_btn.yaml
     vars:
