@@ -173,31 +173,31 @@ packages:
     file: gpio_btn.yaml
     vars:
       name: "GPIO btn mem"
-      pin: "D1"
+      pin: "D2"
       btn: "ufo_desk::Button::mem"
   gpio_btn_up: !include
     file: gpio_btn.yaml
     vars:
       name: "GPIO btn up"
-      pin: "D2"
+      pin: "D3"
       btn: "ufo_desk::Button::up"
   gpio_btn_down: !include
     file: gpio_btn.yaml
     vars:
       name: "GPIO btn down"
-      pin: "D3"
+      pin: "D4"
       btn: "ufo_desk::Button::down"
   gpio_btn_preset1: !include
     file: gpio_btn.yaml
     vars:
       name: "GPIO btn preset1"
-      pin: "D4"
+      pin: "D7"
       btn: "ufo_desk::Button::preset1"
   gpio_btn_preset2: !include
     file: gpio_btn.yaml
     vars:
       name: "GPIO btn preset2"
-      pin: "D7"
+      pin: "D8"
       btn: "ufo_desk::Button::preset2"
 
 # D1 D2 D3 D4(led) D7
