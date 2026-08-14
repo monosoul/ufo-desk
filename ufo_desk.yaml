@@ -197,7 +197,7 @@ packages:
     file: gpio_btn.yaml
     vars:
       name: "GPIO btn preset2"
-      pin: "D8"
+      pin: "D1"
       btn: "ufo_desk::Button::preset2"
 
 # D1 D2 D3 D4(led) D7
