@@ -19,7 +19,7 @@ this component together. I've also sketched a case that can be 3D printed.
 
 Final product
 ======
-![Looks like this](pic/panel.jpg)
+![Looks like this](pic/panel.webp)
 
 Hardware
 ======
@@ -31,7 +31,7 @@ Case is 3D printed.
 
 The board: https://amzn.eu/d/02hhJ2TA
 
-The buttons: https://amzn.eu/d/06ONH4V7
+The buttons: https://amzn.eu/d/0ePJtrS1
 
 ### Control box hardware mods
 In my case the Control Box was making high-pitched whine with the board attached (see example here: https://youtube.com/shorts/FGPJeh3KBNg ).
@@ -49,7 +49,7 @@ Case
 [STL file](cad/ufo_desk_case.stl)
 
 Model is here: 
-https://cad.onshape.com/documents/45d78cc525e092aee55fb095/w/e9f9bd97a05b0db866f06647/e/74652b7a18d69035dbb2d360
+https://cad.onshape.com/documents/fb08a78e39c84b65334fa29c/w/a40ad3b786aaea1566da89c6/e/d2752561d687634f210bc781?renderMode=0&uiState=6a7f23ddbd4a3bfc8791eff4
 
 Home Assistant
 ======
