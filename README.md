@@ -29,7 +29,7 @@ The component assumes that you use it with a popular ESP8266 NodeMCU module with
 
 Case is 3D printed.
 
-The board: https://amzn.eu/d/02hhJ2TA
+The board: https://amzn.eu/d/06bsWsrh / https://de.aliexpress.com/item/1005005242283189.html
 
 The buttons: https://amzn.eu/d/0ePJtrS1
 
