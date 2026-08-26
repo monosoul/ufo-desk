@@ -31,7 +31,7 @@ Case is 3D printed.
 
 The board: https://amzn.eu/d/06bsWsrh / https://de.aliexpress.com/item/1005005242283189.html
 
-The buttons: https://amzn.eu/d/0ePJtrS1
+The buttons: https://amzn.eu/d/0ePJtrS1 (or any other 12 mm push buttons)
 
 ### Control box hardware mods
 In my case the Control Box was making high-pitched whine with the board attached (see example here: https://youtube.com/shorts/FGPJeh3KBNg ).
